@@ -22,7 +22,7 @@ const userSchema = mongoose.Schema(
             type: String,
             required: [true, "Password is required"], 
             minLength: [8, "Password must be atleast 8 characteres"],
-            select: false, 
+            select: false,   // by default pass is not go to database only bcrpt part goes
 
         }, 
         role:{
@@ -92,4 +92,4 @@ userSchema.methods ={
 }
 
  
-export default mongoose.model("Ecommerce", userSchema); 
+export default mongoose.model("User", userSchema); 
