@@ -32,9 +32,6 @@ export const isLoggedIn = asyncHandler(async (req, res, next) => {
  throw new CustomError("Not authorized to access this route", 401); 
     }
 
-
-
-
 })
 
 
