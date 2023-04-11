@@ -2,7 +2,7 @@ import User from '../Models/user.schema.js'
 import asyncHandler from '../services/asyncHandler.js'
 import CustomError from '../utilis/custormError.js'
 import mailHelper from '../utilis/mailHelper.js'
-
+import crypto from 'crypto'
 
 
 export const cookieOptions={
@@ -74,7 +74,7 @@ export const login = asyncHandler(async (req, res)=>{
         throw new CustomError("Please fill all fields", 400); 
     }
 
-  const user=  User.findOne({email}).select("+password")
+  const user= await User.findOne({email}).select("+password")
 
   if(!user){
     throw new CustomError('Invalid credentials', 400)
@@ -167,6 +167,7 @@ export const forgotPassword = asyncHandler(async (req,res)=>{
     // roll back - clear fields and save 
     user.forgotPasswordToken=undefined
     user.forgotPasswordExpiry=undefined
+
     await user.save({validateBeforeSave:false})
 
      throw new CustomError(err.message || 'Email sent failure', 500)  
@@ -175,3 +176,56 @@ export const forgotPassword = asyncHandler(async (req,res)=>{
 })
 
 
+/************
+* @RESET_PASSWORD
+* @route http://localhost:400/api/auth/password/reset/:resetToken
+* @description User will able to reset password based on url token
+* @parameters token form url, password and confirm password
+* @return User object
+ ***********/
+
+export const resetPassword = asyncHandler(async(req,res)=>{
+    const {token:resetToken} = req.params
+    const {password, confirmPassword} = req.body
+  const resetPasswordToken=crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
+
+
+ const user= await User.findOne({
+    forgotPasswordToken: resetPasswordToken,
+    forgotPasswordExpiry: {$gt:Date.now()}
+   })
+
+   if(!user){
+    throw new CustomError("Password token is invalid or expired", 400)
+   }
+
+
+   if(password !==confirmPassword){
+    throw new CustomError("Password and conf password doesnot match", 400); 
+   }
+
+   user.password = password; 
+   user.forgotPasswordToken = undefined;
+   user.forgotPasswordExpiry = undefined; 
+
+   await user.save(); 
+
+   // create token and send as response
+   const token = user.getJwtToken(); 
+   user.password = undefined; 
+
+// helper method for cookie can be added 
+   res.cookie("token", token, cookieOptions)
+   res.status(200).json({
+    success: true, 
+    user
+   })
+
+})
+
+
+
+// TODO: create a controoler for change password
