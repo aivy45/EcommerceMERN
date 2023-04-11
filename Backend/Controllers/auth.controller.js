@@ -108,6 +108,7 @@ export const login = asyncHandler(async (req, res)=>{
  ***********/
 
 export const logout = asyncHandler(async(_req,res)=>{
+    // _req means not using it 
     // res.clearCookie();  also a method
     res.cookie("token", null, {
         expires: new Date(Date.now()), 
@@ -119,3 +120,5 @@ export const logout = asyncHandler(async(_req,res)=>{
         message: "Loggged OUt"
     })
 })
+
+

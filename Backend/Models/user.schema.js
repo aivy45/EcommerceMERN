@@ -34,7 +34,6 @@ const userSchema = mongoose.Schema(
         forgotPasswordToken: String, 
         forgotPasswordExpiry: Date,
 
-
     }, 
 
     {
@@ -57,7 +56,7 @@ userSchema.pre('save', async function(next){  // not arrow function
 // add more features directly to schema
 userSchema.methods ={
     //compare password
-    comparePassword: async function(enteredPassword){
+        comparePassword: async function(enteredPassword){
         return await bcrypt.compare(enteredPassword, this.password); 
     }, 
 
